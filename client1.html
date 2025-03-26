@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Virtual Assistant</title>
+      <style>
+         body {
+         font-family: Arial, sans-serif;
+         margin: 0;
+         padding: 0;
+         background-color: #f9f9f9; 
+         }
+         /* Chat container */
+         .chat-container {
+         position: fixed;
+         bottom: 20px;
+         right: 20px;
+         width: 350px; 
+         max-height: 500px; 
+         border: 1px solid #242020;
+         border-radius: 10px;
+         overflow: hidden;
+         display: none;
+         box-shadow: 0px 0px 20px rgba(10, 9, 9, 0.2);
+         }
+         /* Chat header */
+         .chat-header {
+         background-color: #1a1414;
+         color: white;
+         padding: 15px;
+         text-align: center;
+         border-bottom: 1px solid #0c0b0b; 
+         border-radius: 10px 10px 0 0;
+         position: relative;
+         }
+         /* Chat close button */
+         .chat-close, .refresh-button {
+         position: absolute;
+         top: 10px;
+         cursor: pointer;
+         font-size: 24px;
+         color: white;
+         }
+         .chat-close {
+         right: 20px;
+         }
+         .refresh-button {
+         right: 50px;
+         }
+         /* Chat messages area */
+         .chat-messages {
+         padding: 15px;
+         background-color: #fff;
+         height: 300px;
+         overflow-y: scroll;
+         }
+         /* Individual chat message */
+         .message {
+         margin-bottom: 15px;
+         overflow: hidden;
+         position: relative;
+         }
+         /* Bot message */
+         .message-bot, .message-user, .default-bot {
+         max-width: 70%;
+         padding: 10px 15px;
+         border-radius: 15px;
+         clear: both;
+         }
+         .message-bot {
+         float: left;
+         background-color: #6391e7;
+         color: white;
+         }
+         .message-user {
+         float: right;
+         background-color: #59a55d;
+         color: white;
+         }
+         .message-text {
+         margin-bottom: 5px;
+         }
+         .timestamp {
+         float: right;
+         font-size: 12px;
+         color: #020202; 
+         }
+         /* Chat input area */
+         .chat-input-container {
+         position: relative;
+         margin-top: 30px;
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         padding: 20px;
+         background-color: #fff;
+         border-radius: 25px;
+         box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+         }
+         /* Chat input field */
+         .chat-input {
+         flex-grow: 1;
+         border: none;
+         outline: none;
+         margin-left: 10px;
+         padding: 8px 15px;
+         font-size: 16px;
+         border-radius: 25px;
+         background-color: #f9f9f9;
+         border: 2px solid black;
+         }
+         /* Chat send button */
+         .chat-button {
+         position: fixed;
+         bottom: 20px;
+         right: 20px;
+         width: 60px;
+         height: 60px;
+         border: none;
+         background-color: #007bff;
+         color: white;
+         font-size: 24px;
+         border-radius: 50%;
+         cursor: pointer;
+         outline: none;
+         transition: transform 0.3s ease;
+         }
+         .chat-button:hover {
+         transform: scale(1.1);
+         }
+         .microphone-button {
+    position: absolute; /* Change position to absolute */
+    bottom: 50%; /* Adjust bottom position as needed */
+    right: 25px; /* Adjust right position as needed */
+    transform: translate(0, 50%); /* Align vertically centered */
+    width: 25px;
+    height: 25px;
+    border: none;
+    background-color: transparent;
+    color: inherit;
+    font-size: 18px;
+    cursor: pointer;
+    outline: none;
+    transition: transform 0.3s ease;
+}
+         .microphone-button.muted #microphoneIcon {
+         transform: scale(0.8);
+         }
+         .microphone-button.muted {
+         background-color: #dc3545;
+         }
+         #microphoneIcon {
+         margin-top: 1px;
+         }
+         /* Animation */
+         @keyframes wave {
+         0% {
+         transform: scaleY(0.8);
+         }
+         50% {
+         transform: scaleY(1.2);
+         }
+         100% {
+         transform: scaleY(0.8);
+         }
+         }
+         .wave-animation {
+         animation: wave 0.5s ease-in-out;
+         }
+         /* Thumbnail */
+         .thumbnail {
+         cursor: pointer;
+         max-width: 150px;
+         max-height: 150px;
+         }
+         /* Logo */
+         .logo {
+         width: 50px;
+         height: 50px;
+         border-radius: 50%;
+         margin-right: 10px;
+         position: absolute;
+         top: 10px;
+         left: 10px;
+         overflow: hidden;
+         }
+         /* Refresh button */
+         .refresh-button {
+         width: 20px;
+         height: 20px;
+         border-radius: 50%;
+         background-color: #0e0d0d; 
+         color: white;
+         font-size: 24px;
+         cursor: pointer;
+         outline: none;
+         border: none;
+         top: 10px;
+         }
+         /* Floating animation for chat container */
+         .float-chat {
+         animation: float 0.5s ease-in-out forwards;
+         }
+         .custom-link {
+         color: rgb(241, 241, 247); 
+         text-decoration: underline; 
+         /* Add any other styles as needed */
+         }
+         .custom-link:hover {
+         color: rgb(215, 215, 233); 
+         text-decoration: underline; 
+         }
+         @keyframes float {
+         from {
+         transform: translateX(100%);
+         }
+         to {
+         transform: translateX(0);
+         }
+         }
+         /* CSS to style the dropdown menu */
+         .responseFormat {
+         width: 10px; 
+         padding: 5px; 
+         font-size: 5px; 
+         }
+      </style>
+   </head>
+   <body>
+      <!-- Floating chat button -->
+      <button class="chat-button" onclick="toggleChat()">💬</button>
+      <!-- Chat container -->
+      <div class="chat-container" id="chatContainer">
+      <div class="chat-header">
+         <img src="https://www.sumasoft.com/wp-content/uploads/2023/09/sumasoft-logo.svg" class="logo" alt="Logo">
+         <span class="chat-bot-title">Chat Bot</span>
+         <!-- Refresh button -->
+         <button class="refresh-button" onclick="refreshPage()">↻</button>
+         <span class="chat-close" onclick="toggleChat()">×</span>
+         
+         <div id="chatInterface">
+            <!-- Chat header, messages, and input elements -->
+         </div>
+        
+      </div>
+      <div class="chat-messages" id="messages"></div>
+      <div class="chat-input-container">
+         <!-- Upload button -->
+         <button class="upload-button" onclick="document.getElementById('fileUpload').click()">📤</button>
+         <!-- File input -->
+         <input type="file" id="fileUpload" style="display: none;" onchange="uploadFile(this.files[0])">
+         <!-- Chat input -->
+         <input type="text" id="inputMessage" class="chat-input" placeholder="Type your message...">
+         <!-- Microphone button -->
+         <!-- Microphone button -->
+         <!-- Button to toggle microphone -->
+         <button id="toggleMicrophone"  class="microphone-button" onclick="toggleMicrophone()">
+         <span id="microphoneIcon2">🎙️</span>
+         </button>
+      </div>
+      <script>
+var ws;
+var messageReceived = false;
+
+function initWebSocket() {
+    console.log("WebSocket Connection Setup")
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+        console.log("WebSocket connection started.");
+        ws = new WebSocket("wss://aichatbot.sumasoft.com:7898") 
+        // rejectUnauthorized: false
+        console.log("WebSocket connection started 1.");
+        ws.onopen = function(event) {
+            console.log("WebSocket connection established.");
+            updateMessages("Hello! I am SumaSoft Virtual Assistant Chatbot.How can I help you today?", true);
+        };
+
+
+        ws.onmessage = function(event) {
+            updateMessages("" + event.data, true);
+
+
+            console.log('update message');
+        };
+
+
+        // Event handler for when an error occurs with the WebSocket connection
+        ws.onerror = function(event) {
+            console.log(event);
+            updateMessages("WebSocket error: " + event, true);
+        };
+
+        // Event handler for when the WebSocket connection is closed
+        ws.onclose = function(event) {
+            //updateMessages("", true);
+        };
+    }
+}
+
+
+function sendMessage(message) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(message); // Send the recognized speech to the server
+    }
+}
+document.getElementById("inputMessage").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+});
+
+function handleSpeechRecognition() {
+    recognition = new webkitSpeechRecognition(); // Initialize speech recognition
+    recognition.lang = 'en-US'; // Set language to English (you can change this to other languages)
+    recognition.continuous = false; // Disable continuous recognition
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[event.results.length - 1][0].transcript;
+        console.log('Speech recognition result:', transcript);
+        appendUserMessage(transcript); // Display the recognized speech in the chat interface
+        console.log("speech send")
+        console.log(transcript)
+        // sendMessage(transcript);
+        ws.send(transcript);
+        
+       
+    };
+
+    recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+    };
+
+    recognition.onend = function() {
+        console.log('Speech recognition ended');
+    };
+
+    recognition.start(); // Start speech recognition
+}
+
+// Event listener for the microphone button click
+document.getElementById("toggleMicrophone").addEventListener("click", function() {
+    handleSpeechRecognition();
+});
+
+// Function to append user message to chat interface
+function appendUserMessage(message) {
+    updateMessages(message, false); // Display the recognized speech as a user message in the chat interface
+    
+}
+function toggleMicrophone() {
+    // Add your code to toggle the microphone here
+    console.log("Microphone button clicked");
+}
+
+
+
+function toggleFormat(format) {
+    if (format === 'text') {
+        document.getElementById('textTab').classList.add('active-tab');
+        document.getElementById('videoTab').classList.remove('active-tab');
+        document.getElementById('chatInterface').style.display = 'block'; // Show chat interface for text tab
+        document.getElementById('videoInterface').style.display = 'none'; // Hide video interface
+        document.getElementById('messages').style.display = 'block'; // Show chat messages
+        document.querySelector('.chat-input-container').style.display = 'block'; // Show chat input container
+    } else if (format === 'video') {
+        document.getElementById('textTab').classList.remove('active-tab');
+        document.getElementById('videoTab').classList.add('active-tab');
+        document.getElementById('chatInterface').style.display = 'none'; // Hide chat interface for video tab
+        document.getElementById('videoInterface').style.display = 'block'; // Show video interface
+        document.getElementById('messages').style.display = 'none'; // Hide chat messages
+        document.querySelector('.chat-input-container').style.display = 'block'; // Show chat input container
+    }
+}
+
+function displayMessage(message, isBot) {
+    var messagesDiv = document.getElementById("messages");
+    var messageDiv = document.createElement("div");
+    messageDiv.className = "message";
+    messageDiv.textContent = message;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function sendMessage() {
+    var inputMessage = document.getElementById("inputMessage").value;
+    if (inputMessage.trim() !== "") {
+        ws.send(inputMessage);
+        displayMessage(inputMessage, false);
+        document.getElementById("inputMessage").value = "";
+    }
+}
+
+
+
+function toggleChat() {
+    var chatContainer = document.getElementById("chatContainer");
+    if (chatContainer.style.display === "none") {
+        chatContainer.style.display = "block";
+        initWebSocket();
+    } else {
+        chatContainer.style.display = "none";
+    }
+}
+
+window.onload = function() {
+    initWebSocket();
+};
+
+function updateMessages(message, isBot, isFile, fileType, fileName) {
+    var messagesDiv = document.getElementById("messages");
+    var messageDiv = document.createElement("div");
+    messageDiv.className = "message";
+    var messageTextDiv = document.createElement("div");
+    messageTextDiv.className = "message-text";
+    var timestampContainer = document.createElement("div");
+    timestampContainer.className = "timestamp";
+    var timestamp = getCurrentISTTime();
+    timestampContainer.innerText = timestamp;
+
+    if (isBot) {
+        messageDiv.classList.add("message-bot");
+        
+        // if (!container.querySelector('.static-text')) { 
+        //     const staticText = document.createElement('span'); 
+        //     staticText.className = 'static-text'; 
+        //     staticText.textContent = ' This is static text.'; 
+        //     container.appendChild(staticText); }
+    } else {
+        messageDiv.classList.add("message-user");
+        messageDiv.classList.add("default-bot");
+    }
+
+    if (isFile) {
+        if (fileType.startsWith('image')) {
+            // Display image thumbnail
+            var img = document.createElement('img');
+            img.src = message;
+            img.classList.add('thumbnail'); // Add thumbnail class
+            img.addEventListener('click', function() {
+                // Replace thumbnail with full-size image on click
+                img.style.display = 'none'; // Hide thumbnail
+                var fullImg = document.createElement('img');
+                fullImg.src = message;
+                messageTextDiv.appendChild(fullImg); // Append full-size image
+            });
+            messageTextDiv.appendChild(img);
+        } else {
+            // Display file name with download link
+            var fileLink = document.createElement("a");
+            fileLink.href = message;
+            fileLink.download = fileName; // Use the provided filename for download
+            fileLink.textContent = "Download " + fileName;
+            messageTextDiv.appendChild(fileLink);
+        }
+    } else {
+        messageTextDiv.innerText = message;
+    }
+
+    messageDiv.appendChild(messageTextDiv);
+    messageDiv.appendChild(timestampContainer);
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    //Add animation effect
+    if (isBot) {
+        messageDiv.classList.add("wave-animation");
+    }
+}
+
+function refreshPage() {
+    var messagesDiv = document.getElementById("messages");
+    messagesDiv.innerHTML = ""; // Clear chat messages
+
+    //Close WebSocket connection
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.close(); // Close WebSocket connection if open
+    }
+
+    //Reinitialize WebSocket connection and display initial message
+    initWebSocket();
+}
+
+function uploadFile(file) {
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            var data = event.target.result;
+            // Determine file type
+            var fileType = getFileType(file.name);
+            // You can handle different file types differently
+            // For now, we just display the uploaded file in the chat
+            updateMessages(data, false, true, fileType, file.name);
+        };
+        reader.readAsDataURL(file); // Read file as data URL
+    }
+}
+
+
+function sendFile(file) {
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            var data = event.target.result;
+            // Determine file type
+            var fileType = getFileType(file.name);
+            if (fileType.startsWith('image')) {
+                // Handle images
+                ws.send({
+                    type: 'image',
+                    data: data,
+                    name: file.name
+                }); // Send image data and name to WebSocket server
+            } else {
+                // Handle other document types
+                ws.send({
+                    type: 'document',
+                    data: data,
+                    name: file.name
+                }); // Send document data and name to WebSocket server
+            }
+            updateMessages(data, false, true, fileType); // Display file in chat
+        };
+        reader.readAsDataURL(file); // Read file as data URL
+    }
+}
+
+// Function to get file type based on file name
+function getFileType(fileName) {
+    console.log("to display the filename and download from chat")
+    return fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+}
+
+function sendMessage() {
+    console.log("Inside Send Message(from user side) Function")
+    var inputMessage = document.getElementById("inputMessage").value;
+    if (inputMessage.trim() !== "") {
+        ws.send(inputMessage);
+        updateMessages("" + inputMessage, false); // Print sent message
+        document.getElementById("inputMessage").value = "";
+        document.getElementById("toggleMicrophone").value = "";
+    }
+}
+
+
+
+
+
+function toggleChat() {
+    var chatContainer = document.getElementById("chatContainer");
+    if (chatContainer.style.display === "none") {
+        chatContainer.style.display = "block";
+        chatContainer.classList.add("float-chat");
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            initWebSocket(); // Initialize WebSocket connection only if it's not already open
+        }
+    } else {
+        closeChat();
+    }
+}
+
+function closeChat() {
+    var chatContainer = document.getElementById("chatContainer");
+    chatContainer.style.display = "none";
+    document.getElementById("inputMessage").value = ""; // Clear input field
+}
+
+
+
+function getCurrentISTTime() {
+    var now = new Date();
+    var ISTOffset = 330;
+    var utcTime = now.getTime() + (now.getTimezoneOffset() * 60000); // Convert to UTC time
+    var ISTTime = new Date(utcTime + (ISTOffset * 60000)); // Convert to IST time
+    var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var dayOfWeek = days[ISTTime.getDay()];
+    var hours = ISTTime.getHours();
+    var minutes = ISTTime.getMinutes();
+    var meridiem = hours >= 12 ? 'PM' : 'AM'; // Determine AM or PM
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert midnight (0 hours) to 12
+    var minutesStr = minutes < 10 ? '0' + minutes : minutes; // Add leading zero if needed
+    return dayOfWeek + ' ' + hours + ':' + minutesStr + ' ' + meridiem;
+}
+</script>
+</body>
+</html>
